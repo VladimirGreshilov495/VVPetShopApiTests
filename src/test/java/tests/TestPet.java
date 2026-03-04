@@ -50,13 +50,43 @@ public class TestPet {
             pet.setName("Non-existent Pet");
             pet.setStatus("available");
 
-            Response response = step("Отправть PUT запрос на обновление несуществуещего питомца", () ->
+            Response response = step("Отправть GET запрос на обновление несуществуещего питомца", () ->
                     given()
                             .contentType(ContentType.JSON)
                             .header("Accept", "application/json")
                             .body(pet)
                             .when()
                             .put(BASE_URL + "/pet/"));
+
+            String responseBody = response.getBody().asString();
+
+            step("Проверить, что статус-код ответа == 404", () ->
+                    assertEquals(404, response.getStatusCode(),
+                            "Код ответа не совпа с ожидаемым. Ответ:" + responseBody)
+            );
+
+            step("Проверить, что текст ответа 'Pet not found'", () ->
+                    assertEquals("Pet not found", responseBody,
+                            "Текст ошибки не совпал с ожидаемым Получен: @" + responseBody)
+            );
+    }
+        @Test
+        @Feature("Pet")
+        @Severity(SeverityLevel.CRITICAL)
+        @Owner("Vladimir Greshilov")
+        public void testGetNonexistentPet() {
+            Pet pet = new Pet();
+            pet.setId(9999);
+            pet.setName("Non-existent Pet");
+            pet.setStatus("available");
+
+            Response response = step("Отправть GET запрос на обновление несуществуещего питомца", () ->
+                    given()
+                            .contentType(ContentType.JSON)
+                            .header("Accept", "application/json")
+                            .body(pet)
+                            .when()
+                            .get(BASE_URL + "/pet/9999"));
 
             String responseBody = response.getBody().asString();
 
