@@ -53,13 +53,13 @@ public class TestPet {
         pet.setName("Non-existent Pet");
         pet.setStatus("available");
 
-        Response response = step("Отправть GET запрос на обновление несуществуещего питомца", () ->
+        Response response = step("Отправть PUT запрос на обновление несуществуещего питомца", () ->
                 given()
                         .contentType(ContentType.JSON)
                         .header("Accept", "application/json")
                         .body(pet)
                         .when()
-                        .put(BASE_URL + "/pet/"));
+                        .put(BASE_URL + "/pet"));
 
         String responseBody = response.getBody().asString();
 
@@ -98,7 +98,7 @@ public class TestPet {
                         .header("Accept", "application/json")
                         .body(pet)
                         .when()
-                        .post(BASE_URL + "/pet/"));
+                        .post(BASE_URL + "/pet"));
 
         String responseBody = response.getBody().asString();
 
@@ -137,7 +137,7 @@ public class TestPet {
                         .header("Accept", "application/json")
                         .body(pet)
                         .when()
-                        .post(BASE_URL + "/pet/"));
+                        .post(BASE_URL + "/pet"));
 
         String responseBody = response.getBody().asString();
 

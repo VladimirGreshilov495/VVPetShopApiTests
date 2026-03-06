@@ -1,5 +1,4 @@
 pipeline {
-
     agent any
 
     stages {
@@ -17,10 +16,15 @@ pipeline {
             }
         }
 
-        stage('Allure Report') {
-            steps {
-                allure results: [[path: 'allure-results']]
-            }
+    }
+
+    post {
+        always {
+            allure([
+                includeProperties: false,
+                jdk: '',
+                results: [[path: 'allure-results']]
+            ])
         }
     }
 }
