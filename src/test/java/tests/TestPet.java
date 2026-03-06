@@ -79,6 +79,7 @@ public class TestPet {
             "200, Kiwi, available",
             "201, Buddy, pending",
             "202, Garfield, sold"
+
     })
 
 
@@ -103,18 +104,59 @@ public class TestPet {
 
         step("Проверить, что статус-код ответа == 200", () ->
                 assertEquals(200, response.getStatusCode(),
-                        "Код ответа не совпа с ожидаемым. Ответ:" + responseBody)
+                        "Код ответа не совпал с ожидаемым. Ответ:" + responseBody)
         );
 
         step("Проверка параметров созданного питомца", () -> {
                     Pet createdPet = response.as(Pet.class);
                     assertEquals(pet.getId(),createdPet.getId(),"id питомца не совпадает с ожидаемым" );
                     assertEquals(pet.getName(),createdPet.getName(),"имя питомца не совпадает с ожидаемым" );
-                    assertEquals(pet.getStatus(),createdPet.getStatus(),"статус питомца не совпадает с ожидаемым" );
+                    assertEquals(pet.getStatus(),createdPet.getStatus(),"статус питомца не совпадает с ожидаемым");
                 }
                 );
 
         }
+
+    @ParameterizedTest(name = "Добавление питомца со статусом: {2}")
+    @CsvSource({
+            "203, Marsella, 1"
+    })
+
+    @Feature("Pet")
+    @Severity(SeverityLevel.CRITICAL)
+    @Owner("Vladimir Greshilov")
+    public void testAddNewPet2(int id, String name, int status) {
+        Pet pet = new Pet();
+        pet.setId(id);
+        pet.setName(name);
+        pet.setStatus(String.valueOf(status));
+
+        Response response = step("Отправть POST запрос на добавление питомца", () ->
+                given()
+                        .contentType(ContentType.JSON)
+                        .header("Accept", "application/json")
+                        .body(pet)
+                        .when()
+                        .post(BASE_URL + "/pet/"));
+
+        String responseBody = response.getBody().asString();
+
+        step("Проверить, что статус-код ответа == 404", () ->
+                assertEquals(404, response.getStatusCode(),
+                        "Код ответа не совпал с ожидаемым. Ответ:" + responseBody)
+        );
+
+        step("Проверка параметров созданного питомца", () -> {
+                    Pet createdPet = response.as(Pet.class);
+                    assertEquals(pet.getId(),createdPet.getId(),"id питомца не совпадает с ожидаемым" );
+                    assertEquals(pet.getName(),createdPet.getName(),"имя питомца не совпадает с ожидаемым" );
+                    assertEquals(pet.getStatus(),createdPet.getStatus(),"статус питомца не совпадает с ожидаемым");
+                }
+        );
+
+    }
+
+
     }
 
 
