@@ -8,6 +8,8 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import models.Pet;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
@@ -40,35 +42,122 @@ public class TestPet {
                         "Текст ошибки не совпал с ожидаемым Получен: @" + responseBody)
         );
     }
-        @Test
-        @Feature("Pet")
-        @Severity(SeverityLevel.CRITICAL)
-        @Owner("Vladimir Greshilov")
-        public void testUpdateNonexistentPet() {
-            Pet pet = new Pet();
-            pet.setId(9999);
-            pet.setName("Non-existent Pet");
-            pet.setStatus("available");
 
-            Response response = step("Отправть GET запрос на обновление несуществуещего питомца", () ->
-                    given()
-                            .contentType(ContentType.JSON)
-                            .header("Accept", "application/json")
-                            .body(pet)
-                            .when()
-                            .put(BASE_URL + "/pet/"));
+    @Test
+    @Feature("Pet")
+    @Severity(SeverityLevel.CRITICAL)
+    @Owner("Vladimir Greshilov")
+    public void testUpdateNonexistentPet() {
+        Pet pet = new Pet();
+        pet.setId(9999);
+        pet.setName("Non-existent Pet");
+        pet.setStatus("available");
 
-            String responseBody = response.getBody().asString();
+        Response response = step("Отправть PUT запрос на обновление несуществуещего питомца", () ->
+                given()
+                        .contentType(ContentType.JSON)
+                        .header("Accept", "application/json")
+                        .body(pet)
+                        .when()
+                        .put(BASE_URL + "/pet"));
 
-            step("Проверить, что статус-код ответа == 404", () ->
-                    assertEquals(404, response.getStatusCode(),
-                            "Код ответа не совпа с ожидаемым. Ответ:" + responseBody)
-            );
+        String responseBody = response.getBody().asString();
 
-            step("Проверить, что текст ответа 'Pet not found'", () ->
-                    assertEquals("Pet not found", responseBody,
-                            "Текст ошибки не совпал с ожидаемым Получен: @" + responseBody)
-            );
+        step("Проверить, что статус-код ответа == 404", () ->
+                assertEquals(404, response.getStatusCode(),
+                        "Код ответа не совпа с ожидаемым. Ответ:" + responseBody)
+        );
+
+        step("Проверить, что текст ответа 'Pet not found'", () ->
+                assertEquals("Pet not found", responseBody,
+                        "Текст ошибки не совпал с ожидаемым Получен: @" + responseBody)
+        );
     }
 
-}
+    @ParameterizedTest(name = "Добавление питомца со статусом: {2}")
+    @CsvSource({
+            "200, Kiwi, available",
+            "201, Buddy, pending",
+            "202, Garfield, sold"
+
+    })
+
+
+    @Feature("Pet")
+    @Severity(SeverityLevel.CRITICAL)
+    @Owner("Vladimir Greshilov")
+    public void testAddNewPet(int id, String name, String status) {
+        Pet pet = new Pet();
+        pet.setId(id);
+        pet.setName(name);
+        pet.setStatus(status);
+
+        Response response = step("Отправть POST запрос на добавление питомца", () ->
+                given()
+                        .contentType(ContentType.JSON)
+                        .header("Accept", "application/json")
+                        .body(pet)
+                        .when()
+                        .post(BASE_URL + "/pet"));
+
+        String responseBody = response.getBody().asString();
+
+        step("Проверить, что статус-код ответа == 200", () ->
+                assertEquals(200, response.getStatusCode(),
+                        "Код ответа не совпал с ожидаемым. Ответ:" + responseBody)
+        );
+
+        step("Проверка параметров созданного питомца", () -> {
+                    Pet createdPet = response.as(Pet.class);
+                    assertEquals(pet.getId(),createdPet.getId(),"id питомца не совпадает с ожидаемым" );
+                    assertEquals(pet.getName(),createdPet.getName(),"имя питомца не совпадает с ожидаемым" );
+                    assertEquals(pet.getStatus(),createdPet.getStatus(),"статус питомца не совпадает с ожидаемым");
+                }
+                );
+
+        }
+
+    @ParameterizedTest(name = "Добавление питомца со статусом: {2}")
+    @CsvSource({
+            "203, Marsella, 1"
+    })
+
+    @Feature("Pet")
+    @Severity(SeverityLevel.CRITICAL)
+    @Owner("Vladimir Greshilov")
+    public void testAddNewPetwithincorrectstatus(int id, String name, int status) {
+        Pet pet = new Pet();
+        pet.setId(id);
+        pet.setName(name);
+        pet.setStatus(String.valueOf(status));
+
+        Response response = step("Отправть POST запрос на добавление питомца", () ->
+                given()
+                        .contentType(ContentType.JSON)
+                        .header("Accept", "application/json")
+                        .body(pet)
+                        .when()
+                        .post(BASE_URL + "/pet"));
+
+        String responseBody = response.getBody().asString();
+
+        step("Проверить, что статус-код ответа == 404", () ->
+                assertEquals(404, response.getStatusCode(),
+                        "Код ответа не совпал с ожидаемым. Ответ:" + responseBody)
+        );
+
+        step("Проверка параметров созданного питомца", () -> {
+                    Pet createdPet = response.as(Pet.class);
+                    assertEquals(pet.getId(),createdPet.getId(),"id питомца не совпадает с ожидаемым" );
+                    assertEquals(pet.getName(),createdPet.getName(),"имя питомца не совпадает с ожидаемым" );
+                    assertEquals(pet.getStatus(),createdPet.getStatus(),"статус питомца не совпадает с ожидаемым");
+                }
+        );
+
+    }
+
+
+    }
+
+
+
